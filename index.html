@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE 貼圖製作工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>LINE 貼圖製作工具</h1>
+    </header>
+    
+    <main>
+        <section class="upload-section">
+            <h2>上傳圖片</h2>
+            <div class="upload-container">
+                <input type="file" id="imageUpload" accept="image/*" multiple>
+                <label for="imageUpload" class="upload-button">選擇圖片</label>
+                <p class="help-text">支援 PNG、JPG、GIF 格式，建議尺寸 370×320 像素</p>
+            </div>
+        </section>
+        
+        <section class="preview-section">
+            <h2>預覽與編輯</h2>
+            <div id="imagePreview" class="preview-container">
+                <p class="placeholder-text">上傳圖片後將顯示在此處</p>
+            </div>
+            
+            <div class="edit-tools" id="editTools">
+                <div class="tool-group">
+                    <h3>基本調整</h3>
+                    <button id="resizeBtn" class="tool-button">調整尺寸</button>
+                    <button id="cropBtn" class="tool-button">裁剪</button>
+                    <button id="rotateBtn" class="tool-button">旋轉</button>
+                </div>
+                
+                <div class="tool-group">
+                    <h3>效果</h3>
+                    <button id="brightnessBtn" class="tool-button">亮度</button>
+                    <button id="contrastBtn" class="tool-button">對比度</button>
+                    <button id="transparencyBtn" class="tool-button">透明背景</button>
+                </div>
+                
+                <div class="tool-group">
+                    <h3>操作</h3>
+                    <button id="saveBtn" class="tool-button primary">儲存更改</button>
+                    <button id="downloadBtn" class="tool-button primary">下載</button>
+                    <button id="resetBtn" class="tool-button secondary">重設</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 LINE貼圖製作工具 | <a href="#">使用說明</a> | <a href="#">關於</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
