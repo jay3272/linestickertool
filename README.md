@@ -19,6 +19,36 @@
 - ✅ 輸出處理：支援透明背景、標準化尺寸
 - ✅ 下載功能：支援PNG、JPG格式下載
 
+## 檔案結構
+
+```
+├── index.html
+├── style.css
+├── js/
+│   ├── main.js                    # 主程式入口
+│   ├── core/
+│   │   ├── EditorApp.js           # 核心應用類
+│   │   ├── CanvasManager.js       # 畫布管理
+│   │   ├── HistoryManager.js      # 歷史記錄管理
+│   │   └── UIManager.js           # UI介面管理
+│   ├── tools/
+│   │   ├── BaseTool.js            # 工具基礎類
+│   │   ├── ResizeTool.js          # 調整大小工具
+│   │   ├── CropTool.js            # 裁剪工具
+│   │   ├── RotateTool.js          # 旋轉工具
+│   │   ├── BrightnessTool.js      # 亮度調整工具
+│   │   ├── ContrastTool.js        # 對比度調整工具
+│   │   └── TransparencyTool.js    # 透明背景工具
+│   ├── utils/
+│   │   ├── Constants.js           # 常數定義
+│   │   ├── ImageHelper.js         # 圖片處理函數
+│   │   └── DomHelper.js           # DOM操作輔助函數
+│   └── components/
+│       ├── CropSizeOptions.js     # 裁剪尺寸選項組件
+│       ├── CropGuide.js           # 裁剪指南組件
+│       └── HistoryControls.js     # 歷史控制組件
+```
+
 ## 環境需求
 
 - 支援HTML5的現代瀏覽器（Chrome、Firefox、Safari、Edge等）

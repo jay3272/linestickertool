@@ -3,60 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE 貼圖製作工具</title>
+    <title>LINE貼圖製作工具</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>LINE 貼圖製作工具</h1>
-    </header>
-    
-    <main>
-        <section class="upload-section">
-            <h2>上傳圖片</h2>
-            <div class="upload-container">
-                <input type="file" id="imageUpload" accept="image/*" multiple>
-                <label for="imageUpload" class="upload-button">選擇圖片</label>
-                <p class="help-text">支援 PNG、JPG、GIF 格式，建議尺寸 370×320 像素</p>
+    <div class="app-container">
+        <!-- 標題區 -->
+        <header class="app-header">
+            <h1>LINE貼圖製作工具</h1>
+            <div class="history-controls">
+                <button id="undoBtn" class="history-btn" disabled>
+                    <i class="fas fa-undo"></i> 復原
+                </button>
+                <button id="redoBtn" class="history-btn" disabled>
+                    <i class="fas fa-redo"></i> 重做
+                </button>
             </div>
-        </section>
-        
-        <section class="preview-section">
-            <h2>預覽與編輯</h2>
-            <div id="imagePreview" class="preview-container">
-                <p class="placeholder-text">上傳圖片後將顯示在此處</p>
-            </div>
-            
-            <div class="edit-tools" id="editTools">
-                <div class="tool-group">
-                    <h3>基本調整</h3>
-                    <button id="resizeBtn" class="tool-button">調整尺寸</button>
-                    <button id="cropBtn" class="tool-button" title="選擇裁剪區域，移除圖片不需要的部分">裁剪</button>
-                    <button id="rotateBtn" class="tool-button">旋轉</button>
-                </div>
-                
-                <div class="tool-group">
-                    <h3>效果</h3>
-                    <button id="brightnessBtn" class="tool-button">亮度</button>
-                    <button id="contrastBtn" class="tool-button">對比度</button>
-                    <button id="transparencyBtn" class="tool-button">透明背景</button>
-                </div>
-                
-                <div class="tool-group">
-                    <h3>操作</h3>
-                    <button id="saveBtn" class="tool-button primary">儲存更改</button>
-                    <button id="downloadBtn" class="tool-button primary">下載</button>
-                    <button id="resetBtn" class="tool-button secondary">重設</button>
-                </div>
-            </div>
-        </section>
-    </main>
-    
-    <footer>
-        <p>&copy; 2025 LINE貼圖製作工具 by Jay Wu | <a href="#">使用說明</a> | <a href="#">關於</a></p>
-    </footer>
+        </header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-    <script src="app.js"></script>
+        <!-- 主要內容區 -->
+        <main class="app-main">
+            <!-- 工具欄 -->
+            <aside class="tools-panel">
+                <div class="tools-section">
+                    <h3>基本工具</h3>
+                    <div class="tools-grid">
+                        <button data-tool="resize" class="tool-btn">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>調整大小</span>
+                        </button>
+                        <button data-tool="crop" class="tool-btn">
+                            <i class="fas fa-crop-alt"></i>
+                            <span>裁剪</span>
+                        </button>
+                        <button data-tool="rotate" class="tool-btn">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>旋轉</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tools-section">
+                    <h3>效果工具</h3>
+                    <div class="tools-grid">
+                        <button data-tool="brightness" class="tool-btn">
+                            <i class="fas fa-sun"></i>
+                            <span>亮度</span>
+                        </button>
+                        <button data-tool="contrast" class="tool-btn">
+                            <i class="fas fa-adjust"></i>
+                            <span>對比度</span>
+                        </button>
+                        <button data-tool="transparency" class="tool-btn">
+                            <i class="fas fa-chess-board"></i>
+                            <span>透明背景</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tools-section upload-section">
+                    <h3>上傳圖片</h3>
+                    <div class="upload-container">
+                        <label for="imageUpload" class="upload-btn">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>選擇圖片</span>
+                        </label>
+                        <input type="file" id="imageUpload" accept="image/*" hidden>
+                    </div>
+                </div>
+                
+                <div class="tools-section">
+                    <h3>匯出</h3>
+                    <div class="export-size-container">
+                        <label for="stickerSizeSelect">貼圖尺寸：</label>
+                        <select id="stickerSizeSelect">
+                            <option value="STANDARD">標準 (370×320)</option>
+                            <option value="CUSTOM">自訂 (740×640)</option>
+                            <option value="ANIMATION">動態 (300×270)</option>
+                        </select>
+                    </div>
+                    <button id="exportBtn" class="export-btn" disabled>
+                        <i class="fas fa-download"></i>
+                        <span>匯出貼圖</span>
+                    </button>
+                </div>
+            </aside>
+            
+            <!-- 編輯區域 -->
+            <section class="editor-area">
+                <div class="canvas-container">
+                    <canvas id="mainCanvas"></canvas>
+                    <div id="loadingOverlay" class="loading-overlay hidden">
+                        <div class="spinner"></div>
+                        <span>處理中...</span>
+                    </div>
+                </div>
+                
+                <!-- 工具選項面板 -->
+                <div id="toolOptionsPanel" class="tool-options-panel">
+                    <!-- 工具選項將會動態載入 -->
+                    <div class="default-message">
+                        <p>選擇圖片並選擇工具開始編輯</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 提示訊息 -->
+        <div id="notification" class="notification hidden">
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <!-- 工具選項範本 (隱藏) -->
+    <!-- 調整大小工具選項 -->
+    <template id="resizeToolOptions">
+        <div class="tool-options-content">
+            <h3>調整大小</h3>
+            <div class="resize-options">
+                <div class="input-group">
+                    <label for="resizeWidth">寬度:</label>
+                    <input type="number" id="resizeWidth" min="1" max="2000">
+                    <span>px</span>
+                </div>
+                <div class="input-group">
+                    <label for="resizeHeight">高度:</label>
+                    <input type="number" id="resizeHeight" min="1" max="2000">
+                    <span>px</span>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="maintainAspectRatio" checked>
+                    <label for="maintainAspectRatio">保持比例</label>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="applyResizeBtn" class="primary-btn">套用</button>
+                <button id="cancelResizeBtn" class="secondary-btn">取消</button>
+            </div>
+        </div>
+    </template>
+    
+    <!-- 裁剪工具選項 -->
+    <template id="cropToolOptions">
+        <div class="tool-options-content">
+            <h3>裁剪</h3>
+            <div class="crop-options">
+                <div class="crop-preset-options">
+                    <label>預設比例:</label>
+                    <div class="crop-presets">
+                        <button data-ratio="free" class="crop-preset-btn active">自由</button>
+                        <button data-ratio="1:1" class="crop-preset-btn">1:1</button>
+                        <button data-ratio="4:3" class="crop-preset-btn">4:3</button>
+                        <button data-ratio="16:9" class="crop-preset-btn">16:9</button>
+                    </div>
+                </div>
+                <div class="crop-size-options">
+                    <div class="input-group">
+                        <label for="cropX">X:</label>
+                        <input type="number" id="cropX" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="cropY">Y:</label>
+                        <input type="number" id="cropY" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="cropWidth">寬:</label>
+                        <input type="number" id="cropWidth" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label for="cropHeight">高:</label>
+                        <input type="number" id="cropHeight" min="1">
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="applyCropBtn" class="primary-btn">套用</button>
+                <button id="cancelCropBtn" class="secondary-btn">取消</button>
+            </div>
+        </div>
+    </template>
+    
+    <!-- 旋轉工具選項 -->
+    <template id="rotateToolOptions">
+        <div class="tool-options-content">
+            <h3>旋轉</h3>
+            <div class="rotate-options">
+                <div class="rotation-buttons">
+                    <button id="rotateLeftBtn" class="rotate-btn">
+                        <i class="fas fa-undo"></i>
+                        <span>向左旋轉 90°</span>
+                    </button>
+                    <button id="rotateRightBtn" class="rotate-btn">
+                        <i class="fas fa-redo"></i>
+                        <span>向右旋轉 90°</span>
+                    </button>
+                </div>
+                <div class="rotation-angle">
+                    <label for="rotationAngle">自訂角度:</label>
+                    <input type="range" id="rotationAngle" min="-180" max="180" value="0">
+                    <span id="rotationAngleValue">0°</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="applyRotateBtn" class="primary-btn">套用</button>
+                <button id="cancelRotateBtn" class="secondary-btn">取消</button>
+            </div>
+        </div>
+    </template>
+    
+    <!-- 亮度工具選項 -->
+    <template id="brightnessToolOptions">
+        <div class="tool-options-content">
+            <h3>亮度調整</h3>
+            <div class="brightness-options">
+                <div class="slider-container">
+                    <label for="brightnessSlider">亮度:</label>
+                    <input type="range" id="brightnessSlider" min="-100" max="100" value="0">
+                    <span id="brightnessValue">0</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="applyBrightnessBtn" class="primary-btn">套用</button>
+                <button id="cancelBrightnessBtn" class="secondary-btn">取消</button>
+            </div>
+        </div>
+    </template>
+    
+    <!-- 對比度工具選項 -->
+    <template id="contrastToolOptions">
+        <div class="tool-options-content">
+            <h3>對比度調整</h3>
+            <div class="contrast-options">
+                <div class="slider-container">
+                    <label for="contrastSlider">對比度:</label>
+                    <input type="range" id="contrastSlider" min="-100" max="100" value="0">
+                    <span id="contrastValue">0</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="applyContrastBtn" class="primary-btn">套用</button>
+                <button id="cancelContrastBtn" class="secondary-btn">取消</button>
+            </div>
+        </div>
+    </template>
+    
+    <!-- 透明背景工具選項 -->
+    <template id="transparencyToolOptions">
+        <div class="tool-options-content">
+            <h3>透明背景</h3>
+            <div class="transparency-options">
+                <div class="slider-container">
+                    <label for="toleranceSlider">容差:</label>
+                    <input type="range" id="toleranceSlider" min="0" max="100" value="30">
+                    <span id="toleranceValue">30</span>
+                </div>
+                <div class="info-text">
+                    <p>調整容差以控制有多少相似顏色會被設為透明。</p>
+                    <p>點擊套用後，圖片背景將變為透明。</p>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="applyTransparencyBtn" class="primary-btn">套用</button>
+                <button id="cancelTransparencyBtn" class="secondary-btn">取消</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- 腳本引入 -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
