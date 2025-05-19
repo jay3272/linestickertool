@@ -149,3 +149,19 @@ footer a {
 footer a:hover {
     text-decoration: underline;
 }
+
+/* 裁剪模式樣式 */
+.cropping-active .tool-button:not(#cropBtn):not(#resetBtn) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crop-guide {
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

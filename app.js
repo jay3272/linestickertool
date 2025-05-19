@@ -2,7 +2,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // 常量定義
     const LINE_STICKER_WIDTH = 370;
     const LINE_STICKER_HEIGHT = 320;
-    
+    // 裁剪相關全局變量
+	let isCropping = false;
+	let cropRect = null;
+	let originalCanvasState = null;	
+	
     // 獲取DOM元素
     const imageUpload = document.getElementById('imageUpload');
     const imagePreview = document.getElementById('imagePreview');
@@ -126,12 +130,283 @@ document.addEventListener('DOMContentLoaded', function() {
         
         canvas.renderAll();
     }
-    
-    // 編輯功能 - 裁剪
-    function handleCrop() {
-        alert('裁剪功能正在開發中...');
-        // 這裡將來會實現裁剪功能
-    }
+        	
+	// 更新handleCrop函數
+	function handleCrop() {
+		if (!canvas) return;
+		
+		const activeObject = canvas.getActiveObject();
+		if (!activeObject) {
+			alert('請先選擇一個圖片');
+			return;
+		}
+		
+		if (isCropping) {
+			// 如果已經在裁剪模式，則完成裁剪
+			finishCropping();
+		} else {
+			// 進入裁剪模式
+			startCropping();
+		}
+	}
+	
+	// 開始裁剪模式
+	function startCropping() {
+		// 保存當前畫布狀態以便取消操作
+		originalCanvasState = JSON.stringify(canvas);
+		
+		// 獲取當前選中的對象
+		const activeObject = canvas.getActiveObject();
+		
+		// 禁用其他所有編輯工具
+		toggleEditingTools(false);
+		
+		// 更改裁剪按鈕文字
+		cropBtn.textContent = '完成裁剪';
+		resetBtn.textContent = '取消裁剪';
+		
+		// 啟用裁剪模式
+		isCropping = true;
+		
+		// 獲取對象的邊界
+		const bounds = activeObject.getBoundingRect();
+		
+		// 創建裁剪矩形 - 默認為選中對象的80%大小
+		const rectWidth = bounds.width * 0.8;
+		const rectHeight = bounds.height * 0.8;
+		
+		cropRect = new fabric.Rect({
+			left: bounds.left + bounds.width / 2 - rectWidth / 2,
+			top: bounds.top + bounds.height / 2 - rectHeight / 2,
+			width: rectWidth,
+			height: rectHeight,
+			fill: 'rgba(0,0,0,0.2)',
+			stroke: '#00B900',
+			strokeWidth: 2,
+			strokeDashArray: [5, 5],
+			transparentCorners: false,
+			cornerColor: '#00B900',
+			cornerSize: 10,
+			lockRotation: true,
+			hasRotatingPoint: false
+		});
+		
+		canvas.add(cropRect);
+		canvas.setActiveObject(cropRect);
+		canvas.renderAll();
+		
+		// 顯示裁剪指南
+		showCropGuide();
+	}
+	
+	// 完成裁剪操作
+	function finishCropping() {
+		if (!canvas || !cropRect) return;
+		
+		// 獲取要裁剪的圖像對象（假設是畫布上的第一個對象）
+		const objects = canvas.getObjects();
+		let imageObject = null;
+		
+		for (let obj of objects) {
+			if (obj !== cropRect && obj.type === 'image') {
+				imageObject = obj;
+				break;
+			}
+		}
+		
+		if (!imageObject) {
+			alert('找不到要裁剪的圖像');
+			cancelCropping();
+			return;
+		}
+		
+		// 獲取裁剪矩形和圖像的位置及尺寸
+		const imgElement = imageObject.getElement();
+		const cropRectData = {
+			left: cropRect.left - imageObject.left + imageObject.width * imageObject.scaleX / 2,
+			top: cropRect.top - imageObject.top + imageObject.height * imageObject.scaleY / 2,
+			width: cropRect.width * cropRect.scaleX,
+			height: cropRect.height * cropRect.scaleY
+		};
+	
+		// 創建臨時畫布來執行裁剪
+		const tempCanvas = document.createElement('canvas');
+		const tempCtx = tempCanvas.getContext('2d');
+		
+		// 設置臨時畫布大小
+		tempCanvas.width = cropRectData.width;
+		tempCanvas.height = cropRectData.height;
+		
+		// 計算源圖像上的裁剪區域（基於原始圖像尺寸）
+		const scaleFactor = 1 / imageObject.scaleX;
+		const sourceX = cropRectData.left * scaleFactor;
+		const sourceY = cropRectData.top * scaleFactor;
+		const sourceWidth = cropRectData.width * scaleFactor;
+		const sourceHeight = cropRectData.height * scaleFactor;
+		
+		// 在臨時畫布上繪製裁剪後的圖像
+		tempCtx.drawImage(
+			imgElement, 
+			sourceX, sourceY, sourceWidth, sourceHeight,
+			0, 0, cropRectData.width, cropRectData.height
+		);
+		
+		// 從臨時畫布創建新的Fabric圖像
+		fabric.Image.fromURL(tempCanvas.toDataURL(), function(newImg) {
+			// 移除原始圖像和裁剪矩形
+			canvas.remove(imageObject);
+			canvas.remove(cropRect);
+			
+			// 添加新的裁剪後圖像
+			newImg.set({
+				left: canvas.width / 2,
+				top: canvas.height / 2,
+				originX: 'center',
+				originY: 'center'
+			});
+			
+			canvas.add(newImg);
+			canvas.setActiveObject(newImg);
+			
+			// 更新原始圖像引用為新裁剪的圖像
+			originalImage = newImg;
+			
+			// 退出裁剪模式
+			exitCroppingMode();
+		});
+	}
+	
+	// 取消裁剪操作
+	function cancelCropping() {
+		if (!canvas) return;
+		
+		// 如果有保存的原始狀態，恢復它
+		if (originalCanvasState) {
+			canvas.loadFromJSON(originalCanvasState, function() {
+				canvas.renderAll();
+				// 找到並選中圖像對象
+				const objects = canvas.getObjects();
+				for (let obj of objects) {
+					if (obj.type === 'image') {
+						canvas.setActiveObject(obj);
+						break;
+					}
+				}
+			});
+		} else {
+			// 只移除裁剪矩形
+			if (cropRect) {
+				canvas.remove(cropRect);
+			}
+		}
+		
+		// 退出裁剪模式
+		exitCroppingMode();
+	}
+	
+	// 退出裁剪模式，重置界面
+	function exitCroppingMode() {
+		// 重置裁剪相關變量
+		isCropping = false;
+		cropRect = null;
+		originalCanvasState = null;
+		
+		// 恢復按鈕文字
+		cropBtn.textContent = '裁剪';
+		resetBtn.textContent = '重設';
+		
+		// 啟用所有編輯工具
+		toggleEditingTools(true);
+		
+		// 隱藏裁剪指南
+		hideCropGuide();
+		
+		// 重新渲染畫布
+		canvas.renderAll();
+	}
+	
+	// 切換編輯工具啟用/禁用狀態（裁剪模式專用）
+	function toggleEditingTools(enabled) {
+		const buttons = editTools.querySelectorAll('button');
+		buttons.forEach(button => {
+			// 在裁剪模式中，只保持裁剪和重設按鈕可用
+			if (button.id === 'cropBtn' || button.id === 'resetBtn') {
+				button.disabled = false;
+			} else {
+				button.disabled = !enabled;
+			}
+		});
+	}
+	
+	// 顯示裁剪操作指南
+	function showCropGuide() {
+		// 創建裁剪指南元素
+		const guideElement = document.createElement('div');
+		guideElement.id = 'cropGuide';
+		guideElement.className = 'crop-guide';
+		guideElement.innerHTML = `
+			<div class="guide-content">
+				<h4>裁剪模式</h4>
+				<p>1. 調整綠色框的大小和位置</p>
+				<p>2. 點擊「完成裁剪」按鈕確認</p>
+				<p>3. 或點擊「取消裁剪」放棄更改</p>
+			</div>
+		`;
+		
+		// 添加樣式
+		const style = document.createElement('style');
+		style.id = 'cropGuideStyle';
+		style.textContent = `
+			.crop-guide {
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+				background-color: rgba(0, 185, 0, 0.8);
+				color: white;
+				padding: 15px;
+				border-radius: 5px;
+				z-index: 1000;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+			}
+			.guide-content h4 {
+				margin-top: 0;
+				margin-bottom: 10px;
+			}
+			.guide-content p {
+				margin: 5px 0;
+			}
+		`;
+		
+		// 添加到文檔
+		document.head.appendChild(style);
+		document.body.appendChild(guideElement);
+	}
+	
+	// 隱藏裁剪操作指南
+	function hideCropGuide() {
+		const guideElement = document.getElementById('cropGuide');
+		const styleElement = document.getElementById('cropGuideStyle');
+		
+		if (guideElement) {
+			document.body.removeChild(guideElement);
+		}
+		
+		if (styleElement) {
+			document.head.removeChild(styleElement);
+		}
+	}
+	
+	// 更新重設按鈕的事件處理函數，支持取消裁剪
+	const originalResetHandler = handleReset;
+	function handleReset() {
+		if (isCropping) {
+			// 如果在裁剪模式中，執行取消裁剪
+			cancelCropping();
+		} else {
+			// 否則執行原始的重設功能
+			originalResetHandler();
+		}
+	}
     
     // 編輯功能 - 旋轉
     function handleRotate() {
@@ -340,4 +615,5 @@ document.addEventListener('DOMContentLoaded', function() {
             editTools.classList.remove('disabled');
         }
     }
+	
 });
