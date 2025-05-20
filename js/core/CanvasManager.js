@@ -333,4 +333,20 @@ export class CanvasManager {
         }
     }
     //#endregion
+
+    getCurrentDimensions() {
+        return {
+            width: this.canvas.width,
+            height: this.canvas.height
+        };
+    }
+
+    getImageData() {
+        if (!this.workCanvas || this.workCanvas.width === 0 || this.workCanvas.height === 0) {
+            console.warn("無效的畫布尺寸，無法取得 ImageData");
+            return null;
+        }
+        return this.workCtx.getImageData(0, 0, this.workCanvas.width, this.workCanvas.height);
+    }
+
 }

@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toolButtons.forEach(button => {
         button.addEventListener('click', () => {
             const toolName = button.getAttribute('data-tool');
-            editor.activateTool(toolName);
+            editor.selectTool(toolName);
         });
     });
 

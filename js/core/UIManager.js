@@ -464,6 +464,10 @@ export default class UIManager {
         this.redoBtn.disabled = !historyManager.canRedo();
     }
 
+    updateUI() {
+        this.updateHistoryButtons(); // 目前只需要更新 undo/redo 狀態
+    }
+
     /**
      * 啟用匯出按鈕
      */
@@ -517,4 +521,8 @@ export default class UIManager {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
+
+    updateToolUI(toolName) {
+        this.loadToolOptions(toolName);
+    }
 }

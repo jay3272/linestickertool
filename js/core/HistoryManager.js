@@ -22,8 +22,12 @@ export class HistoryManager {
             this.history = this.history.slice(0, this.currentIndex + 1);
         }
 
+        // ✅ clone 前先檢查 imageData 是否有效
+        const clone = this.cloneImageData(state);
+        if (!clone) return;  // 無效資料不加入歷史
+
         // 添加新狀態
-        this.history.push(this.cloneImageData(state));
+        this.history.push(clone);
         this.currentIndex = this.history.length - 1;
 
         // 如果歷史記錄太長，移除最舊的記錄
@@ -77,13 +81,21 @@ export class HistoryManager {
      * @returns {ImageData} 複製的ImageData
      */
     cloneImageData(imageData) {
-        // 創建新的ImageData
-        const clone = new ImageData(
+        if (
+            !imageData ||
+            !imageData.data ||
+            imageData.width <= 0 ||
+            imageData.height <= 0
+        ) {
+            console.warn("⚠️ 無效的 ImageData，跳過 cloneImageData()");
+            return null;
+        }
+
+        return new ImageData(
             new Uint8ClampedArray(imageData.data),
             imageData.width,
             imageData.height
         );
-        return clone;
     }
 
     /**
@@ -92,5 +104,10 @@ export class HistoryManager {
     clearHistory() {
         this.history = [];
         this.currentIndex = -1;
+    }
+
+
+    saveState(imageData) {
+        this.addState(imageData);
     }
 }

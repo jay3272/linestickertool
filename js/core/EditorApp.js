@@ -137,6 +137,10 @@ export class EditorApp {
         this.uiManager.updateToolUI(toolName);
     }
 
+    clearActiveTool() {
+        this.state.currentTool = null;
+    }
+
     applyEdit(editType, params) {
         if (!this.state.hasImage) return;
 
@@ -182,4 +186,23 @@ export class EditorApp {
         this.uiManager.updateUI();
     }
     // #endregion
+
+
+    setActiveTool(toolName) {
+        this.selectTool(toolName);
+    }
+
+
+    resizeImage(width, height) {
+        return new Promise((resolve, reject) => {
+            try {
+                this.tools.resize.applyEdit({ width, height });
+                const imageData = this.canvasManager.getImageData?.();
+                this.historyManager.saveState(imageData || '調整大小');
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
 }
