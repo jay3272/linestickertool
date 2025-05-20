@@ -205,4 +205,11 @@ export class EditorApp {
             }
         });
     }
+
+    previewTransparency(tolerance) {
+        this.tools.transparency.applyEdit({ tolerance });
+        const imageData = this.canvasManager.getImageData?.();
+        this.historyManager.saveState(imageData || '預覽去背');
+    }
+
 }
