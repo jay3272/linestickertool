@@ -521,8 +521,26 @@ export default class UIManager {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-
+    /**
+     * 更新工具UI
+     * @param {string} toolName - 工具名稱
+     */
     updateToolUI(toolName) {
         this.loadToolOptions(toolName);
     }
+
+    /**
+     * 重置透明度容差值
+     */
+    resetTransparencyTolerance() {
+        const slider = document.getElementById('toleranceSlider');
+        const valueLabel = document.getElementById('toleranceValue');
+
+        if (slider && valueLabel) {
+            slider.value = 20; // 預設容差值
+            valueLabel.textContent = '20';
+            slider.dispatchEvent(new Event('input')); // ⚠️ 觸發預覽
+        }
+    }
+
 }

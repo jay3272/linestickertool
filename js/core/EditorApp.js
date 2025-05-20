@@ -111,6 +111,7 @@ export class EditorApp {
                     this.state.originalImage = img;
                     this.state.hasImage = true;
                     this.canvasManager.loadImage(img);
+                    this.uiManager.resetTransparencyTolerance();
                     this.historyManager.saveState('載入圖片');
                     this.uiManager.updateHistoryButtons();
                     resolve();
