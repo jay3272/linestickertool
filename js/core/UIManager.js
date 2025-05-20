@@ -39,18 +39,14 @@ export default class UIManager {
 
         // 上傳按鈕點擊事件
         this.uploadInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                this.showLoading();
-                // 將文件處理委派給app的方法
-                this.app.loadImage(e.target.files[0])
-                    .then(() => {
-                        this.hideLoading();
-                        this.enableExportButton();
-                    })
-                    .catch(error => {
-                        this.hideLoading();
-                        this.showNotification('圖片載入失敗：' + error.message, 'error');
-                    });
+            this.showLoading();
+            try {
+                this.app.handleImageUpload(e);
+                this.hideLoading();
+                this.enableExportButton();
+            } catch (error) {
+                this.hideLoading();
+                this.showNotification('圖片載入失敗：' + error.message, 'error');
             }
         });
 
@@ -79,6 +75,17 @@ export default class UIManager {
             this.app.historyManager.redo();
             this.updateHistoryButtons();
         });
+    }
+
+    /**
+     * 設置UI狀態   
+     */
+    setupUI() {
+        this.clearToolOptions();                  // 顯示預設提示
+        this.updateHistoryButtons();             // 根據歷史紀錄更新 undo/redo 狀態
+        this.exportBtn.disabled = true;          // 禁用匯出按鈕
+        this.notification.classList.add('hidden');
+        this.loadingOverlay.classList.add('hidden');
     }
 
     /**
@@ -509,4 +516,5 @@ export default class UIManager {
     capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
+
 }

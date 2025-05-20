@@ -1,7 +1,7 @@
 // EditorApp.js
 import { CanvasManager } from './CanvasManager.js';
 import { HistoryManager } from './HistoryManager.js';
-import { UIManager } from './UIManager.js';
+import UIManager from './UIManager.js';
 import { EDITOR_MODES, DEFAULT_SETTINGS } from '../utils/Constants.js';
 import { ResizeTool } from '../tools/ResizeTool.js';
 import { CropTool } from '../tools/CropTool.js';
@@ -12,12 +12,12 @@ import { TransparencyTool } from '../tools/TransparencyTool.js';
 
 export class EditorApp {
     constructor() {
-        // ªì©l¤Æ¥D­nºÞ²z¾¹
+        // ï¿½ï¿½lï¿½Æ¥Dï¿½nï¿½Þ²zï¿½ï¿½
         this.canvasManager = new CanvasManager(this);
         this.historyManager = new HistoryManager(this);
         this.uiManager = new UIManager(this);
 
-        // ªì©l¤Æ¤u¨ã¶°
+        // ï¿½ï¿½lï¿½Æ¤uï¿½ã¶°
         this.tools = {
             resize: new ResizeTool(this),
             crop: new CropTool(this),
@@ -27,7 +27,7 @@ export class EditorApp {
             transparency: new TransparencyTool(this)
         };
 
-        // ½s¿è¾¹ª¬ºA
+        // ï¿½sï¿½è¾¹ï¿½ï¿½ï¿½A
         this.state = {
             currentMode: EDITOR_MODES.IDLE,
             currentTool: null,
@@ -37,28 +37,28 @@ export class EditorApp {
             settings: { ...DEFAULT_SETTINGS }
         };
 
-        // ªì©l¤ÆÀ³¥Î
+        // ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         this.init();
     }
 
     init() {
-        // ³]¸mªì©lUI
+        // ï¿½]ï¿½mï¿½ï¿½lUI
         this.uiManager.setupUI();
 
-        // ³]¸m¨Æ¥óºÊÅ¥¾¹
+        // ï¿½]ï¿½mï¿½Æ¥ï¿½ï¿½Å¥ï¿½ï¿½
         this.setupEventListeners();
 
-        // ªì©l¤Æµe¥¬
+        // ï¿½ï¿½lï¿½Æµeï¿½ï¿½
         this.canvasManager.initCanvas();
 
-        console.log('LINE¶K¹Ï½s¿è¾¹¤wªì©l¤Æ');
+        console.log('LINEï¿½Kï¿½Ï½sï¿½è¾¹ï¿½wï¿½ï¿½lï¿½ï¿½');
     }
 
     setupEventListeners() {
-        // ¹Ï¤ù¤W¶Ç³B²z
+        // ï¿½Ï¤ï¿½ï¿½Wï¿½Ç³Bï¿½z
         document.getElementById('imageUpload').addEventListener('change', this.handleImageUpload.bind(this));
 
-        // ¤u¨ã¿ï¾Ü³B²z
+        // ï¿½uï¿½ï¿½ï¿½Ü³Bï¿½z
         const toolButtons = document.querySelectorAll('.tool-btn');
         toolButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -67,10 +67,10 @@ export class EditorApp {
             });
         });
 
-        // ¶×¥X«ö¶s³B²z
+        // ï¿½×¥Xï¿½ï¿½ï¿½sï¿½Bï¿½z
         document.getElementById('exportBtn').addEventListener('click', this.exportSticker.bind(this));
 
-        // ºM¾P/­«°µ«ö¶s³B²z
+        // ï¿½Mï¿½P/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Bï¿½z
         document.getElementById('undoBtn').addEventListener('click', () => this.historyManager.undo());
         document.getElementById('redoBtn').addEventListener('click', () => this.historyManager.redo());
     }
@@ -86,7 +86,7 @@ export class EditorApp {
                 this.state.originalImage = img;
                 this.state.hasImage = true;
                 this.canvasManager.loadImage(img);
-                this.historyManager.saveState('¹Ï¤ù¤W¶Ç');
+                this.historyManager.saveState('ï¿½Ï¤ï¿½ï¿½Wï¿½ï¿½');
                 this.uiManager.updateUI();
             };
             img.src = e.target.result;
@@ -94,18 +94,43 @@ export class EditorApp {
         reader.readAsDataURL(file);
     }
 
+    /**
+     * è¼‰å…¥åœ–ç‰‡
+     * @param {File} file - åœ–ç‰‡æª”æ¡ˆ
+     */
+    async loadImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    this.state.originalImage = img;
+                    this.state.hasImage = true;
+                    this.canvasManager.loadImage(img);
+                    this.historyManager.saveState('è¼‰å…¥åœ–ç‰‡');
+                    this.uiManager.updateHistoryButtons();
+                    resolve();
+                };
+                img.onerror = () => reject(new Error('åœ–ç‰‡è¼‰å…¥å¤±æ•—'));
+                img.src = e.target.result;
+            };
+            reader.onerror = () => reject(new Error('æª”æ¡ˆè®€å–å¤±æ•—'));
+            reader.readAsDataURL(file);
+        });
+    }
+
     selectTool(toolName) {
-        // °±¥Î·í«e¤u¨ã
+        // ï¿½ï¿½ï¿½Î·ï¿½ï¿½eï¿½uï¿½ï¿½
         if (this.state.currentTool) {
             this.tools[this.state.currentTool].deactivate();
         }
 
-        // ±Ò¥Î¿ï¾Üªº¤u¨ã
+        // ï¿½Ò¥Î¿ï¿½Üªï¿½ï¿½uï¿½ï¿½
         this.state.currentTool = toolName;
         this.state.currentMode = EDITOR_MODES.EDITING;
         this.tools[toolName].activate();
 
-        // §ó·sUI¥H¤Ï¬M¿ï¾Üªº¤u¨ã
+        // ï¿½ï¿½sUIï¿½Hï¿½Ï¬Mï¿½ï¿½Üªï¿½ï¿½uï¿½ï¿½
         this.uiManager.updateToolUI(toolName);
     }
 
@@ -115,16 +140,16 @@ export class EditorApp {
         this.state.isProcessing = true;
         this.uiManager.showProcessingIndicator();
 
-        // ¨Ï¥ÎsetTimeout¨Ó½T«OUI¦³¾÷·|§ó·s
+        // ï¿½Ï¥ï¿½setTimeoutï¿½Ó½Tï¿½OUIï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½ï¿½s
         setTimeout(() => {
-            // ½Õ¥Î¬ÛÀ³¤u¨ãªº½s¿è¨ç¼Æ
+            // ï¿½Õ¥Î¬ï¿½ï¿½ï¿½ï¿½uï¿½ãªºï¿½sï¿½ï¿½ï¿½ï¿½
             const result = this.tools[editType].applyEdit(params);
 
             if (result) {
-                // «O¦s¾ú¥vª¬ºA
-                this.historyManager.saveState(`®M¥Î${this.tools[editType].name}`);
+                // ï¿½Oï¿½sï¿½ï¿½ï¿½vï¿½ï¿½ï¿½A
+                this.historyManager.saveState(`ï¿½Mï¿½ï¿½${this.tools[editType].name}`);
 
-                // §ó·sUI
+                // ï¿½ï¿½sUI
                 this.uiManager.updateUI();
             }
 
@@ -136,10 +161,10 @@ export class EditorApp {
     exportSticker() {
         if (!this.state.hasImage) return;
 
-        // Àò¨ú³B²z«áªº¹Ï¤ù
+        // ï¿½ï¿½ï¿½ï¿½Bï¿½zï¿½áªºï¿½Ï¤ï¿½
         const dataURL = this.canvasManager.exportCanvas();
 
-        // ³Ð«Ø¤U¸ü³sµ²
+        // ï¿½Ð«Ø¤Uï¿½ï¿½ï¿½sï¿½ï¿½
         const link = document.createElement('a');
         link.href = dataURL;
         link.download = 'line-sticker.png';
@@ -148,7 +173,7 @@ export class EditorApp {
         document.body.removeChild(link);
     }
 
-    // ´£¨Ñµ¹HistoryManager¨Ï¥Îªºª¬ºAºÞ²z¤èªk
+    // ï¿½ï¿½ï¿½Ñµï¿½HistoryManagerï¿½Ï¥Îªï¿½ï¿½ï¿½ï¿½Aï¿½Þ²zï¿½ï¿½k
     getCanvasState() {
         return this.canvasManager.getCanvasData();
     }

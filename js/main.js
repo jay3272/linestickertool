@@ -1,6 +1,6 @@
 // main.js - LINE貼圖製作工具的主要入口文件
 import { EditorApp } from './core/EditorApp.js';
-import { Constants } from './utils/Constants.js';
+import { NOTIFICATION } from './utils/Constants.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化編輯器應用
@@ -27,10 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 綁定上傳事件
     const imageUpload = document.getElementById('imageUpload');
     imageUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            editor.loadImage(file);
-        }
+        editor.handleImageUpload(e); // 呼叫 EditorApp 提供的方法
     });
 
     // 綁定匯出按鈕事件
@@ -56,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setTimeout(() => {
             notification.classList.add('hidden');
-        }, 3000);
+        }, NOTIFICATION.DISPLAY_DURATION); // 使用 Constants 中的通知時間
     };
 
     // 初始化

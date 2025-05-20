@@ -1,14 +1,14 @@
 // CanvasManager.js
 import { DomHelper } from '../utils/DomHelper.js';
-import { ImageHelper } from '../utils/ImageHelper.js';
-import { CANVAS_SIZE, LINE_STICKER_SIZES } from '../utils/Constants.js';
+import * as ImageHelper from '../utils/ImageHelper.js';
+import { CANVAS_SIZE, STICKER_SIZES } from '../utils/Constants.js';
 
 export class CanvasManager {
     constructor(editorApp) {
         this.editorApp = editorApp;
         this.canvas = null;
         this.ctx = null;
-        this.workCanvas = null; // ¥Î©ó³B²z¹Ï¹³ªºÂ÷«Ìµe¥¬
+        this.workCanvas = null; // ï¿½Î©ï¿½Bï¿½zï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìµeï¿½ï¿½
         this.workCtx = null;
         this.currentImage = null;
         this.imagePosition = { x: 0, y: 0 };
@@ -16,31 +16,33 @@ export class CanvasManager {
         this.imageRotation = 0;
         this.canvasBackgroundColor = '#ffffff';
         this.canvasSize = { ...CANVAS_SIZE };
-        this.selectedStickerSize = LINE_STICKER_SIZES.STANDARD;
+        this.selectedStickerSize = STICKER_SIZES.STANDARD;
     }
 
     initCanvas() {
-        // Àò¨ú¥Dµe¥¬©M¤W¤U¤å
-        this.canvas = document.getElementById('mainCanvas');
+        // ï¿½ï¿½ï¿½ï¿½Dï¿½eï¿½ï¿½ï¿½Mï¿½Wï¿½Uï¿½ï¿½
+        this.canvas = DomHelper.get('#mainCanvas');
         this.ctx = this.canvas.getContext('2d');
 
-        // ³]¸mµe¥¬¤j¤p
+        // ï¿½]ï¿½mï¿½eï¿½ï¿½ï¿½jï¿½p
         this.canvas.width = this.canvasSize.width;
         this.canvas.height = this.canvasSize.height;
 
-        // ³Ð«Ø¤u§@µe¥¬(Â÷«Ìµe¥¬)
+        console.log('ï¿½ï¿½lï¿½Æ¥Dï¿½eï¿½ï¿½:', this.canvas.width, this.canvas.height);
+
+        // ï¿½Ð«Ø¤uï¿½@ï¿½eï¿½ï¿½(ï¿½ï¿½ï¿½Ìµeï¿½ï¿½)
         this.workCanvas = document.createElement('canvas');
         this.workCtx = this.workCanvas.getContext('2d');
 
-        // ªì©l¤Æµe¥¬ - ²MªÅ¨Ã¶ñ¥R­I´º¦â
+        // ï¿½ï¿½lï¿½Æµeï¿½ï¿½ - ï¿½Mï¿½Å¨Ã¶ï¿½Rï¿½Iï¿½ï¿½ï¿½ï¿½
         this.clearCanvas();
 
-        // ³]¸m¨Æ¥ó³B²z
+        // ï¿½]ï¿½mï¿½Æ¥ï¿½Bï¿½z
         this.setupCanvasEvents();
     }
 
     setupCanvasEvents() {
-        // ·í»Ý­nª½±µ¦bµe¥¬¤W¤¬°Ê®É¨Ï¥Î
+        // ï¿½ï¿½ï¿½Ý­nï¿½ï¿½ï¿½ï¿½ï¿½bï¿½eï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½Ê®É¨Ï¥ï¿½
         let isDragging = false;
         let lastPosition = { x: 0, y: 0 };
 
@@ -63,18 +65,18 @@ export class CanvasManager {
                     y: e.clientY - rect.top
                 };
 
-                // ­pºâ²¾°Ê¶ZÂ÷
+                // ï¿½pï¿½â²¾ï¿½Ê¶Zï¿½ï¿½
                 const deltaX = currentPosition.x - lastPosition.x;
                 const deltaY = currentPosition.y - lastPosition.y;
 
-                // §ó·s¹Ï¹³¦ì¸m
+                // ï¿½ï¿½sï¿½Ï¹ï¿½ï¿½ï¿½m
                 this.imagePosition.x += deltaX;
                 this.imagePosition.y += deltaY;
 
-                // §ó·s³Ì«á¦ì¸m
+                // ï¿½ï¿½sï¿½Ì«ï¿½ï¿½m
                 lastPosition = currentPosition;
 
-                // ­«Ã¸µe¥¬
+                // ï¿½ï¿½Ã¸ï¿½eï¿½ï¿½
                 this.redrawCanvas();
             }
         });
@@ -82,8 +84,8 @@ export class CanvasManager {
         this.canvas.addEventListener('mouseup', () => {
             if (isDragging) {
                 isDragging = false;
-                // ¦pªG¦³²¾°Ê¹Ï¹³¡A«O¦s¾ú¥vª¬ºA
-                this.editorApp.historyManager.saveState('²¾°Ê¹Ï¹³');
+                // ï¿½pï¿½Gï¿½ï¿½ï¿½ï¿½ï¿½Ê¹Ï¹ï¿½ï¿½Aï¿½Oï¿½sï¿½ï¿½ï¿½vï¿½ï¿½ï¿½A
+                this.editorApp.historyManager.saveState('ï¿½ï¿½ï¿½Ê¹Ï¹ï¿½');
             }
         });
 
@@ -93,41 +95,48 @@ export class CanvasManager {
     }
 
     loadImage(image) {
+        console.log('CanvasManager ï¿½}ï¿½lï¿½ï¿½ï¿½Jï¿½Ï¤ï¿½', image.width, image.height);
+
         this.currentImage = image;
 
-        // ­pºâ¾A·íªºÁY©ñ¤ñ¨Ò¥H²Å¦Xµe¥¬
+        // ï¿½pï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½Ò¥Hï¿½Å¦Xï¿½eï¿½ï¿½
         const scaleX = this.canvas.width / image.width;
         const scaleY = this.canvas.height / image.height;
-        this.imageScale = Math.min(scaleX, scaleY, 1) * 0.9; // ½T«O¹Ï¹³¤£¶W¥Xµe¥¬¡A¯d¤@¨ÇÃä¶Z
+        this.imageScale = Math.min(scaleX, scaleY, 1) * 0.9; // ï¿½Tï¿½Oï¿½Ï¹ï¿½ï¿½ï¿½ï¿½Wï¿½Xï¿½eï¿½ï¿½ï¿½Aï¿½dï¿½@ï¿½ï¿½ï¿½ï¿½Z
 
-        // ¸m¤¤¹Ï¹³
+        // ï¿½mï¿½ï¿½ï¿½Ï¹ï¿½
         this.imagePosition = {
             x: (this.canvas.width - image.width * this.imageScale) / 2,
             y: (this.canvas.height - image.height * this.imageScale) / 2
         };
 
-        // ­«¸m±ÛÂà
+        // ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½ï¿½
         this.imageRotation = 0;
 
-        // §ó·s¤u§@µe¥¬¤j¤p
+        // ï¿½ï¿½sï¿½uï¿½@ï¿½eï¿½ï¿½ï¿½jï¿½p
         this.workCanvas.width = image.width;
         this.workCanvas.height = image.height;
         this.workCtx.drawImage(image, 0, 0);
 
-        // Ã¸»s¨ì¥Dµe¥¬
+        // Ã¸ï¿½sï¿½ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
     }
 
     redrawCanvas() {
-        // ²MªÅµe¥¬
+        console.log('ï¿½}ï¿½lï¿½ï¿½Ã¸ï¿½eï¿½ï¿½');
+        // ï¿½Mï¿½Åµeï¿½ï¿½
         this.clearCanvas();
 
-        if (!this.currentImage) return;
+        if (!this.currentImage) {
+            console.warn('ï¿½Lï¿½Ï¤ï¿½ï¿½iï¿½ï¿½Ã¸');
+            return;
+        }
 
-        // «O¦s·í«eÂà´«ª¬ºA
+        console.log('ï¿½ï¿½Ã¸ï¿½ï¿½mï¿½Pï¿½ï¿½Ò¡G', this.imagePosition, this.imageScale);
+        // ï¿½Oï¿½sï¿½ï¿½ï¿½eï¿½à´«ï¿½ï¿½ï¿½A
         this.ctx.save();
 
-        // ³]¸mµe¥¬¤¤¤ßÂI¬°±ÛÂà¤¤¤ß
+        // ï¿½]ï¿½mï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½à¤¤ï¿½ï¿½
         const centerX = this.imagePosition.x + (this.currentImage.width * this.imageScale) / 2;
         const centerY = this.imagePosition.y + (this.currentImage.height * this.imageScale) / 2;
 
@@ -135,7 +144,7 @@ export class CanvasManager {
         this.ctx.rotate(this.imageRotation * Math.PI / 180);
         this.ctx.translate(-centerX, -centerY);
 
-        // Ã¸»s¹Ï¹³
+        // Ã¸ï¿½sï¿½Ï¹ï¿½
         this.ctx.drawImage(
             this.workCanvas,
             this.imagePosition.x,
@@ -144,93 +153,95 @@ export class CanvasManager {
             this.currentImage.height * this.imageScale
         );
 
-        // «ì´_ÅÜ´«
+        console.log('ï¿½Ï¤ï¿½ï¿½wÃ¸ï¿½sï¿½ï¿½eï¿½ï¿½');
+        // ï¿½ï¿½_ï¿½Ü´ï¿½
         this.ctx.restore();
 
-        // ®Ú¾Ú·í«e¤u¨ãÃ¸»sÃB¥~ªº¤¸¯À¡]¦pµô°Å®Ø¡^
+        // ï¿½Ú¾Ú·ï¿½ï¿½eï¿½uï¿½ï¿½Ã¸ï¿½sï¿½Bï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½pï¿½ï¿½ï¿½Å®Ø¡^
         if (this.editorApp.state.currentTool === 'crop') {
             this.editorApp.tools.crop.drawCropOverlay();
         }
     }
 
     clearCanvas() {
-        // ²MªÅµe¥¬¨Ã¶ñ¥R­I´º¦â
+        console.log('ï¿½Mï¿½Åµeï¿½ï¿½ï¿½Iï¿½ï¿½:', this.canvasBackgroundColor);
+        // ï¿½Mï¿½Åµeï¿½ï¿½ï¿½Ã¶ï¿½Rï¿½Iï¿½ï¿½ï¿½ï¿½
         this.ctx.fillStyle = this.canvasBackgroundColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    // ¥Î©ó½Õ¾ã¤j¤p
+    // ï¿½Î©ï¿½Õ¾ï¿½jï¿½p
     resizeImage(width, height) {
         if (!this.currentImage) return false;
 
-        // ³Ð«ØÁ{®Éµe¥¬¶i¦æ½Õ¾ã¤j¤p
+        // ï¿½Ð«ï¿½ï¿½{ï¿½Éµeï¿½ï¿½ï¿½iï¿½ï¿½Õ¾ï¿½jï¿½p
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
         tempCanvas.width = width;
         tempCanvas.height = height;
 
-        // ¦bÁ{®Éµe¥¬¤WÃ¸»sÁY©ñ«áªº¹Ï¹³
+        // ï¿½bï¿½{ï¿½Éµeï¿½ï¿½ï¿½WÃ¸ï¿½sï¿½Yï¿½ï¿½áªºï¿½Ï¹ï¿½
         tempCtx.drawImage(this.workCanvas, 0, 0, width, height);
 
-        // §ó·s¤u§@µe¥¬
+        // ï¿½ï¿½sï¿½uï¿½@ï¿½eï¿½ï¿½
         this.workCanvas.width = width;
         this.workCanvas.height = height;
         this.workCtx.drawImage(tempCanvas, 0, 0);
 
-        // §ó·s·í«e¹Ï¹³¤Ø¤o
+        // ï¿½ï¿½sï¿½ï¿½ï¿½eï¿½Ï¹ï¿½ï¿½Ø¤o
         this.currentImage.width = width;
         this.currentImage.height = height;
 
-        // ­«·s­pºâÁY©ñ©M¦ì¸m
+        // ï¿½ï¿½ï¿½sï¿½pï¿½ï¿½ï¿½Yï¿½ï¿½Mï¿½ï¿½m
         this.resetImagePosition();
 
-        // ­«Ã¸¥Dµe¥¬
+        // ï¿½ï¿½Ã¸ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
         return true;
     }
 
-    // ¥Î©óµô°Å
+    // ï¿½Î©ï¿½ï¿½ï¿½ï¿½
     cropImage(x, y, width, height) {
         if (!this.currentImage) return false;
 
-        // ³Ð«ØÁ{®Éµe¥¬¥H¦sÀxµô°Å°Ï°ì
+        // ï¿½Ð«ï¿½ï¿½{ï¿½Éµeï¿½ï¿½ï¿½Hï¿½sï¿½xï¿½ï¿½ï¿½Å°Ï°ï¿½
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
         tempCanvas.width = width;
         tempCanvas.height = height;
 
-        // ±N¿ï©w°Ï°ìÃ¸»s¨ìÁ{®Éµe¥¬
+        // ï¿½Nï¿½ï¿½wï¿½Ï°ï¿½Ã¸ï¿½sï¿½ï¿½ï¿½{ï¿½Éµeï¿½ï¿½
         tempCtx.drawImage(
             this.workCanvas,
             x, y, width, height,
             0, 0, width, height
         );
 
-        // §ó·s¤u§@µe¥¬
+        // ï¿½ï¿½sï¿½uï¿½@ï¿½eï¿½ï¿½
         this.workCanvas.width = width;
         this.workCanvas.height = height;
         this.workCtx.drawImage(tempCanvas, 0, 0);
 
-        // §ó·s·í«e¹Ï¹³¤Ø¤o
+        // ï¿½ï¿½sï¿½ï¿½ï¿½eï¿½Ï¹ï¿½ï¿½Ø¤o
         this.currentImage.width = width;
         this.currentImage.height = height;
 
-        // ­«·s­pºâÁY©ñ©M¦ì¸m
+        // ï¿½ï¿½ï¿½sï¿½pï¿½ï¿½ï¿½Yï¿½ï¿½Mï¿½ï¿½m
         this.resetImagePosition();
 
-        // ­«Ã¸¥Dµe¥¬
+        // ï¿½ï¿½Ã¸ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
         return true;
     }
 
-    // ±ÛÂà¹Ï¹³
+    // ï¿½ï¿½ï¿½ï¿½Ï¹ï¿½
     rotateImage(angle) {
         if (!this.currentImage) return false;
 
-        // §ó·s±ÛÂà¨¤«×
+        // ï¿½ï¿½sï¿½ï¿½ï¿½à¨¤ï¿½ï¿½
         this.imageRotation = (this.imageRotation + angle) % 360;
 
-        // ¦pªG±ÛÂà90/270«×¡A¥æ´«¤u§@µe¥¬ªº¼e°ª
+        // ï¿½pï¿½Gï¿½ï¿½ï¿½ï¿½90/270ï¿½×¡Aï¿½æ´«ï¿½uï¿½@ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½eï¿½ï¿½
         if (angle % 180 === 90) {
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
@@ -247,67 +258,67 @@ export class CanvasManager {
             );
             tempCtx.restore();
 
-            // §ó·s¤u§@µe¥¬
+            // ï¿½ï¿½sï¿½uï¿½@ï¿½eï¿½ï¿½
             this.workCanvas.width = tempCanvas.width;
             this.workCanvas.height = tempCanvas.height;
             this.workCtx.drawImage(tempCanvas, 0, 0);
 
-            // §ó·s·í«e¹Ï¹³¤Ø¤o
+            // ï¿½ï¿½sï¿½ï¿½ï¿½eï¿½Ï¹ï¿½ï¿½Ø¤o
             this.currentImage.width = tempCanvas.width;
             this.currentImage.height = tempCanvas.height;
 
-            // ­«¸m±ÛÂà¨¤«×¡]¦]¬°§Ú­Ì¤w¸g¹ê»Ú±ÛÂà¤F¹Ï¹³¡^
+            // ï¿½ï¿½ï¿½mï¿½ï¿½ï¿½à¨¤ï¿½×¡]ï¿½]ï¿½ï¿½ï¿½Ú­Ì¤wï¿½gï¿½ï¿½Ú±ï¿½ï¿½ï¿½Fï¿½Ï¹ï¿½ï¿½^
             this.imageRotation = 0;
 
-            // ­«·s­pºâÁY©ñ©M¦ì¸m
+            // ï¿½ï¿½ï¿½sï¿½pï¿½ï¿½ï¿½Yï¿½ï¿½Mï¿½ï¿½m
             this.resetImagePosition();
         }
 
-        // ­«Ã¸¥Dµe¥¬
+        // ï¿½ï¿½Ã¸ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
         return true;
     }
 
-    // ½Õ¾ã«G«×
+    // ï¿½Õ¾ï¿½Gï¿½ï¿½
     adjustBrightness(value) {
         if (!this.currentImage) return false;
 
-        // ¨Ï¥Î ImageHelper ³B²z«G«×½Õ¾ã
+        // ï¿½Ï¥ï¿½ ImageHelper ï¿½Bï¿½zï¿½Gï¿½×½Õ¾ï¿½
         ImageHelper.adjustBrightness(this.workCanvas, this.workCtx, value);
 
-        // ­«Ã¸¥Dµe¥¬
+        // ï¿½ï¿½Ã¸ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
         return true;
     }
 
-    // ½Õ¾ã¹ï¤ñ«×
+    // ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½
     adjustContrast(value) {
         if (!this.currentImage) return false;
 
-        // ¨Ï¥Î ImageHelper ³B²z¹ï¤ñ«×½Õ¾ã
+        // ï¿½Ï¥ï¿½ ImageHelper ï¿½Bï¿½zï¿½ï¿½ï¿½×½Õ¾ï¿½
         ImageHelper.adjustContrast(this.workCanvas, this.workCtx, value);
 
-        // ­«Ã¸¥Dµe¥¬
+        // ï¿½ï¿½Ã¸ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
         return true;
     }
 
-    // ³B²z­I´º³z©ú«×
+    // ï¿½Bï¿½zï¿½Iï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½
     makeTransparent(tolerance) {
         if (!this.currentImage) return false;
 
-        // ¨Ï¥Î ImageHelper ³B²z³z©ú­I´º
+        // ï¿½Ï¥ï¿½ ImageHelper ï¿½Bï¿½zï¿½zï¿½ï¿½ï¿½Iï¿½ï¿½
         ImageHelper.makeBackgroundTransparent(this.workCanvas, this.workCtx, tolerance);
 
-        // §ó·sµe¥¬­I´º¥H«KÅã¥Ü³z©ú«×
+        // ï¿½ï¿½sï¿½eï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Hï¿½Kï¿½ï¿½Ü³zï¿½ï¿½ï¿½ï¿½
         this.canvasBackgroundColor = 'transparent';
 
-        // ­«Ã¸¥Dµe¥¬
+        // ï¿½ï¿½Ã¸ï¿½Dï¿½eï¿½ï¿½
         this.redrawCanvas();
         return true;
     }
 
-    // ­«¸m¹Ï¹³¦ì¸m¡]³q±`¦b¹Ï¹³ÅÜ´««á©I¥s¡^
+    // ï¿½ï¿½ï¿½mï¿½Ï¹ï¿½ï¿½ï¿½mï¿½]ï¿½qï¿½`ï¿½bï¿½Ï¹ï¿½ï¿½Ü´ï¿½ï¿½ï¿½Iï¿½sï¿½^
     resetImagePosition() {
         const scaleX = this.canvas.width / this.currentImage.width;
         const scaleY = this.canvas.height / this.currentImage.height;
@@ -319,24 +330,24 @@ export class CanvasManager {
         };
     }
 
-    // ³]¸m¶K¹Ï¤Ø¤oÃþ«¬
+    // ï¿½]ï¿½mï¿½Kï¿½Ï¤Ø¤oï¿½ï¿½ï¿½ï¿½
     setStickerSize(sizeType) {
         this.selectedStickerSize = LINE_STICKER_SIZES[sizeType];
-        // ¥i¥H¦b³o¸Ì²K¥[µe¥¬«ü«n©Î¨ä¥LµøÄ±´£¥Ü
+        // ï¿½iï¿½Hï¿½bï¿½oï¿½Ì²Kï¿½[ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½nï¿½Î¨ï¿½Lï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½
         this.redrawCanvas();
     }
 
-    // ¶×¥Xµe¥¬
+    // ï¿½×¥Xï¿½eï¿½ï¿½
     exportCanvas() {
-        // ³Ð«Ø¶×¥Xµe¥¬¡A¤j¤p°ò©ó¿ï¾Üªº¶K¹Ï¤Ø¤o
+        // ï¿½Ð«Ø¶×¥Xï¿½eï¿½ï¿½ï¿½Aï¿½jï¿½pï¿½ï¿½ï¿½ï¿½Üªï¿½ï¿½Kï¿½Ï¤Ø¤o
         const exportCanvas = document.createElement('canvas');
         const exportCtx = exportCanvas.getContext('2d');
 
-        // ³]¸m¶×¥X¤Ø¤o
+        // ï¿½]ï¿½mï¿½×¥Xï¿½Ø¤o
         exportCanvas.width = this.selectedStickerSize.width;
         exportCanvas.height = this.selectedStickerSize.height;
 
-        // ¦pªG­I´º¬O³z©úªº¡A»Ý­n½T«O¶×¥X¹Ï¹³¤]¬O³z©úªº
+        // ï¿½pï¿½Gï¿½Iï¿½ï¿½ï¿½Oï¿½zï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Ý­nï¿½Tï¿½Oï¿½×¥Xï¿½Ï¹ï¿½ï¿½]ï¿½Oï¿½zï¿½ï¿½ï¿½ï¿½
         if (this.canvasBackgroundColor === 'transparent') {
             exportCtx.clearRect(0, 0, exportCanvas.width, exportCanvas.height);
         } else {
@@ -344,16 +355,16 @@ export class CanvasManager {
             exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
         }
 
-        // ­pºâÁY©ñ¤ñ¨Ò¥H²Å¦X¶×¥X¤Ø¤o
+        // ï¿½pï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½Ò¥Hï¿½Å¦Xï¿½×¥Xï¿½Ø¤o
         const scaleX = exportCanvas.width / this.currentImage.width;
         const scaleY = exportCanvas.height / this.currentImage.height;
         const scale = Math.min(scaleX, scaleY, 1);
 
-        // ­pºâÁY©ñ«á¹Ï¹³¦b¶×¥Xµe¥¬¤Wªº¦ì¸m
+        // ï¿½pï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½Ï¹ï¿½ï¿½bï¿½×¥Xï¿½eï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½ï¿½m
         const x = (exportCanvas.width - this.currentImage.width * scale) / 2;
         const y = (exportCanvas.height - this.currentImage.height * scale) / 2;
 
-        // Ã¸»s¹Ï¹³¨ì¶×¥Xµe¥¬
+        // Ã¸ï¿½sï¿½Ï¹ï¿½ï¿½ï¿½×¥Xï¿½eï¿½ï¿½
         exportCtx.drawImage(
             this.workCanvas,
             x, y,
@@ -361,11 +372,11 @@ export class CanvasManager {
             this.currentImage.height * scale
         );
 
-        // ªð¦^¹Ï¹³¸ê®ÆURL
+        // ï¿½ï¿½^ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½URL
         return exportCanvas.toDataURL('image/png');
     }
 
-    // ¨ú±oµe¥¬ª¬ºA¡]¥Î©ó¾ú¥v°O¿ý¡^
+    // ï¿½ï¿½ï¿½oï¿½eï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½]ï¿½Î©ï¿½ï¿½ï¿½vï¿½Oï¿½ï¿½ï¿½^
     getCanvasData() {
         return {
             imageData: this.workCanvas.toDataURL(),
@@ -380,40 +391,40 @@ export class CanvasManager {
         };
     }
 
-    // «ì´_µe¥¬ª¬ºA¡]¥Î©ó¾ú¥v°O¿ý¡^
+    // ï¿½ï¿½_ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½]ï¿½Î©ï¿½ï¿½ï¿½vï¿½Oï¿½ï¿½ï¿½^
     restoreCanvasData(state) {
         if (!state) return;
 
-        // «ì´_­I´º¦â
+        // ï¿½ï¿½_ï¿½Iï¿½ï¿½ï¿½ï¿½
         this.canvasBackgroundColor = state.backgroundColor;
 
-        // «ì´_¹Ï¹³
+        // ï¿½ï¿½_ï¿½Ï¹ï¿½
         if (state.imageData) {
             const img = new Image();
             img.onload = () => {
-                // «ì´_¤u§@µe¥¬
+                // ï¿½ï¿½_ï¿½uï¿½@ï¿½eï¿½ï¿½
                 this.workCanvas.width = state.dimensions.width;
                 this.workCanvas.height = state.dimensions.height;
                 this.workCtx.drawImage(img, 0, 0);
 
-                // §ó·s¹Ï¹³¸ê°T
+                // ï¿½ï¿½sï¿½Ï¹ï¿½ï¿½ï¿½T
                 if (!this.currentImage) {
                     this.currentImage = new Image();
                 }
                 this.currentImage.width = state.dimensions.width;
                 this.currentImage.height = state.dimensions.height;
 
-                // «ì´_¦ì¸m¡BÁY©ñ¡B±ÛÂà
+                // ï¿½ï¿½_ï¿½ï¿½mï¿½Bï¿½Yï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½
                 this.imagePosition = { ...state.position };
                 this.imageScale = state.scale;
                 this.imageRotation = state.rotation;
 
-                // ­«Ã¸µe¥¬
+                // ï¿½ï¿½Ã¸ï¿½eï¿½ï¿½
                 this.redrawCanvas();
             };
             img.src = state.imageData;
         } else {
-            // ¦pªG¨S¦³¹Ï¹³¼Æ¾Ú¡A²MªÅµe¥¬
+            // ï¿½pï¿½Gï¿½Sï¿½ï¿½ï¿½Ï¹ï¿½ï¿½Æ¾Ú¡Aï¿½Mï¿½Åµeï¿½ï¿½
             this.currentImage = null;
             this.clearCanvas();
         }

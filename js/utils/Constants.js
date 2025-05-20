@@ -4,6 +4,30 @@
  */
 
 /**
+ * 預設編輯器設定
+ */
+export const DEFAULT_SETTINGS = {
+    brightness: 0,
+    contrast: 0,
+    transparency: 0,
+    cropRegion: null,
+    resize: {
+        width: 512,
+        height: 512
+    }
+};
+
+/**
+ * 編輯模式
+ */
+export const EDITOR_MODES = {
+    IDLE: 'idle',
+    EDITING: 'editing',
+    MOVING: 'moving',
+    CROPPING: 'cropping'
+};
+
+/**
  * 貼圖尺寸常數
  */
 export const STICKER_SIZES = {
@@ -153,6 +177,14 @@ export const CANVAS = {
 };
 
 /**
+ * Canvas大小
+ */
+export const CANVAS_SIZE = {
+    width: 800,
+    height: 600
+};
+
+/**
  * 檔案名稱相關常數
  */
 export const FILE_NAMES = {
@@ -174,15 +206,15 @@ export const DOM_IDS = {
     TOOL_OPTIONS_PANEL: 'toolOptionsPanel',
     LOADING_OVERLAY: 'loadingOverlay',
     NOTIFICATION: 'notification',
-    
+
     // 按鈕
     EXPORT_BTN: 'exportBtn',
     UNDO_BTN: 'undoBtn',
     REDO_BTN: 'redoBtn',
-    
+
     // 上傳相關
     IMAGE_UPLOAD: 'imageUpload',
-    
+
     // 選項相關
     STICKER_SIZE_SELECT: 'stickerSizeSelect'
 };
