@@ -1,22 +1,38 @@
 // main.js - LINE貼圖製作工具的主要入口文件
+
 import { EditorApp } from './core/EditorApp.js';
 import { NOTIFICATION } from './utils/Constants.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 初始化編輯器應用
-    const editor = new EditorApp({
-        canvasId: 'mainCanvas',
-        toolOptions: document.getElementById('toolOptionsPanel'),
-        uploadInput: document.getElementById('imageUpload'),
-        exportBtn: document.getElementById('exportBtn'),
-        undoBtn: document.getElementById('undoBtn'),
-        redoBtn: document.getElementById('redoBtn'),
-        stickerSizeSelect: document.getElementById('stickerSizeSelect'),
-        loadingOverlay: document.getElementById('loadingOverlay')
-    });
 
-    // 綁定工具按鈕事件
+    // #region DOM 元素參考定義
     const toolButtons = document.querySelectorAll('.tool-btn');
+    const imageUpload = document.getElementById('imageUpload');
+    const exportBtn = document.getElementById('exportBtn');
+    const stickerSizeSelect = document.getElementById('stickerSizeSelect');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const toolOptions = document.getElementById('toolOptionsPanel');
+    const canvasId = 'mainCanvas';
+    // #endregion
+
+    // #region 初始化編輯器應用
+    const editor = new EditorApp({
+        canvasId,
+        toolOptions,
+        uploadInput: imageUpload,
+        exportBtn,
+        undoBtn,
+        redoBtn,
+        stickerSizeSelect,
+        loadingOverlay
+    });
+    // #endregion
+
+    // #region 綁定使用者操作事件
+
+    // 工具選擇按鈕
     toolButtons.forEach(button => {
         button.addEventListener('click', () => {
             const toolName = button.getAttribute('data-tool');
@@ -24,38 +40,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 綁定上傳事件
-    const imageUpload = document.getElementById('imageUpload');
+    // 圖片上傳
     imageUpload.addEventListener('change', (e) => {
-        editor.handleImageUpload(e); // 呼叫 EditorApp 提供的方法
+        editor.handleImageUpload(e);
     });
 
-    // 綁定匯出按鈕事件
-    const exportBtn = document.getElementById('exportBtn');
+    // 匯出圖片
     exportBtn.addEventListener('click', () => {
-        const sizeOption = document.getElementById('stickerSizeSelect').value;
+        const sizeOption = stickerSizeSelect.value;
         editor.exportImage(sizeOption);
     });
 
-    // 顯示通知的函數
+    // #endregion
+
+    // #region 顯示通知功能
     window.showNotification = (message, isError = false) => {
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notificationText');
-        
+
         notificationText.textContent = message;
         notification.classList.remove('hidden');
-        
+
         if (isError) {
             notification.classList.add('error');
         } else {
             notification.classList.remove('error');
         }
-        
+
         setTimeout(() => {
             notification.classList.add('hidden');
-        }, NOTIFICATION.DISPLAY_DURATION); // 使用 Constants 中的通知時間
+        }, NOTIFICATION.DISPLAY_DURATION);
     };
+    // #endregion
 
-    // 初始化
+    // #region 初始化完成訊息
     console.log('LINE貼圖製作工具已初始化完成');
+    // #endregion
 });

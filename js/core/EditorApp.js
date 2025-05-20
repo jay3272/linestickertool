@@ -1,23 +1,28 @@
-// EditorApp.js
+// EditorApp.js - 編輯器主控制類
+
+// #region 匯入模組
 import { CanvasManager } from './CanvasManager.js';
 import { HistoryManager } from './HistoryManager.js';
 import UIManager from './UIManager.js';
 import { EDITOR_MODES, DEFAULT_SETTINGS } from '../utils/Constants.js';
+
 import { ResizeTool } from '../tools/ResizeTool.js';
 import { CropTool } from '../tools/CropTool.js';
 import { RotateTool } from '../tools/RotateTool.js';
 import { BrightnessTool } from '../tools/BrightnessTool.js';
 import { ContrastTool } from '../tools/ContrastTool.js';
 import { TransparencyTool } from '../tools/TransparencyTool.js';
+// #endregion
 
 export class EditorApp {
     constructor() {
-        // ��l�ƥD�n�޲z��
+        // #region 初始化核心管理器
         this.canvasManager = new CanvasManager(this);
         this.historyManager = new HistoryManager(this);
         this.uiManager = new UIManager(this);
+        // #endregion
 
-        // ��l�Ƥu�㶰
+        // #region 初始化工具集合
         this.tools = {
             resize: new ResizeTool(this),
             crop: new CropTool(this),
@@ -26,8 +31,9 @@ export class EditorApp {
             contrast: new ContrastTool(this),
             transparency: new TransparencyTool(this)
         };
+        // #endregion
 
-        // �s�边���A
+        // #region 初始狀態
         this.state = {
             currentMode: EDITOR_MODES.IDLE,
             currentTool: null,
@@ -36,29 +42,27 @@ export class EditorApp {
             isProcessing: false,
             settings: { ...DEFAULT_SETTINGS }
         };
+        // #endregion
 
-        // ��l������
+        // #region 啟動初始化流程
         this.init();
+        // #endregion
     }
 
+    // #region 初始化程序
     init() {
-        // �]�m��lUI
         this.uiManager.setupUI();
-
-        // �]�m�ƥ��ť��
         this.setupEventListeners();
-
-        // ��l�Ƶe��
         this.canvasManager.initCanvas();
-
-        console.log('LINE�K�Ͻs�边�w��l��');
+        console.log('LINE貼圖編輯器已初始化完成');
     }
+    // #endregion
 
+    // #region 設定 DOM 事件綁定
     setupEventListeners() {
-        // �Ϥ��W�ǳB�z
-        document.getElementById('imageUpload').addEventListener('change', this.handleImageUpload.bind(this));
+        document.getElementById('imageUpload')
+            .addEventListener('change', this.handleImageUpload.bind(this));
 
-        // �u���ܳB�z
         const toolButtons = document.querySelectorAll('.tool-btn');
         toolButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -67,14 +71,18 @@ export class EditorApp {
             });
         });
 
-        // �ץX���s�B�z
-        document.getElementById('exportBtn').addEventListener('click', this.exportSticker.bind(this));
+        document.getElementById('exportBtn')
+            .addEventListener('click', this.exportSticker.bind(this));
 
-        // �M�P/�������s�B�z
-        document.getElementById('undoBtn').addEventListener('click', () => this.historyManager.undo());
-        document.getElementById('redoBtn').addEventListener('click', () => this.historyManager.redo());
+        document.getElementById('undoBtn')
+            .addEventListener('click', () => this.historyManager.undo());
+
+        document.getElementById('redoBtn')
+            .addEventListener('click', () => this.historyManager.redo());
     }
+    // #endregion
 
+    // #region 圖片上傳處理
     handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -86,7 +94,7 @@ export class EditorApp {
                 this.state.originalImage = img;
                 this.state.hasImage = true;
                 this.canvasManager.loadImage(img);
-                this.historyManager.saveState('�Ϥ��W��');
+                this.historyManager.saveState('圖片上傳');
                 this.uiManager.updateUI();
             };
             img.src = e.target.result;
@@ -94,10 +102,6 @@ export class EditorApp {
         reader.readAsDataURL(file);
     }
 
-    /**
-     * 載入圖片
-     * @param {File} file - 圖片檔案
-     */
     async loadImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -118,19 +122,18 @@ export class EditorApp {
             reader.readAsDataURL(file);
         });
     }
+    // #endregion
 
+    // #region 工具選擇與應用
     selectTool(toolName) {
-        // ���η��e�u��
         if (this.state.currentTool) {
             this.tools[this.state.currentTool].deactivate();
         }
 
-        // �ҥο�ܪ��u��
         this.state.currentTool = toolName;
         this.state.currentMode = EDITOR_MODES.EDITING;
         this.tools[toolName].activate();
 
-        // ��sUI�H�ϬM��ܪ��u��
         this.uiManager.updateToolUI(toolName);
     }
 
@@ -140,16 +143,11 @@ export class EditorApp {
         this.state.isProcessing = true;
         this.uiManager.showProcessingIndicator();
 
-        // �ϥ�setTimeout�ӽT�OUI�����|��s
         setTimeout(() => {
-            // �եά����u�㪺�s����
             const result = this.tools[editType].applyEdit(params);
 
             if (result) {
-                // �O�s���v���A
-                this.historyManager.saveState(`�M��${this.tools[editType].name}`);
-
-                // ��sUI
+                this.historyManager.saveState(`套用 ${this.tools[editType].name}`);
                 this.uiManager.updateUI();
             }
 
@@ -157,14 +155,14 @@ export class EditorApp {
             this.uiManager.hideProcessingIndicator();
         }, 50);
     }
+    // #endregion
 
+    // #region 匯出貼圖
     exportSticker() {
         if (!this.state.hasImage) return;
 
-        // ����B�z�᪺�Ϥ�
         const dataURL = this.canvasManager.exportCanvas();
 
-        // �ЫؤU���s��
         const link = document.createElement('a');
         link.href = dataURL;
         link.download = 'line-sticker.png';
@@ -172,8 +170,9 @@ export class EditorApp {
         link.click();
         document.body.removeChild(link);
     }
+    // #endregion
 
-    // ���ѵ�HistoryManager�ϥΪ����A�޲z��k
+    // #region 提供給 History 使用的狀態操作
     getCanvasState() {
         return this.canvasManager.getCanvasData();
     }
@@ -182,4 +181,5 @@ export class EditorApp {
         this.canvasManager.restoreCanvasData(state);
         this.uiManager.updateUI();
     }
+    // #endregion
 }
